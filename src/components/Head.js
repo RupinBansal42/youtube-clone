@@ -1,38 +1,79 @@
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { toggleMenu } from "../utils/appSlice";
+import { YOUTUBE_SEARCH_API } from "../utils/constants";
 
 const Head = () => {
+  const [searchQuery, setSearchQuery] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const dispatch = useDispatch();
+  console.log("sea", searchQuery);
   const toggleMenuHandler = () => {
-    dispatch(toggleMenu);
+    dispatch(toggleMenu());
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => getSearchSuggestion(), 300);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [searchQuery]);
+
+  const getSearchSuggestion = async () => {
+    const data = await fetch(YOUTUBE_SEARCH_API + searchQuery);
+    const json = await data.json();
+    setSuggestions(json[1]);
   };
   return (
     <div className="grid grid-flow-col p-5 m-2 shadow-lg ">
       <div className="flex col-span-1 ">
         <img
-          onClick={()=>toggleMenuHandler()}
+          onClick={() => toggleMenuHandler()}
           className="h-10 cursor-pointer"
           alt="menu"
           src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJMAAACgCAMAAAA/1a4kAAAAXVBMVEX///8AAAD19fVDQ0Pv7+8bGxvo6OhJSUn5+fmpqallZWX8/Py6urptbW3l5eWEhITIyMhWVlYiIiJ4eHiysrI5OTnAwMAqKiqLi4vd3d1OTk5fX1+SkpIQEBCZmZkzEtLxAAABdklEQVR4nO3bW5KCMBCFYQTBiCgy6IzoOPtfplyUcPGBF6vPVP3fCk5VqKTTdIIAAAAAAADgn3GhGbd7m+j4V3zFVqIyS2aJknJlLDpNImXWiRp7N1o36zid/SDS4Wyd5mnrM+XWWV7Ohz6TdRSv/84lPvBO6tSWbrWK189MqXWSAeVMimv3bZ3E67fynXUSz2+aMos32DMTwbNF8QyuP/Mf6zy1y6hWCYLKfJO6n+b1b5UXm8jK9Za5WaJWuLby/ooAAAAAfEiYmFm/T3T8Ta8bK0W5nd8Rqpv1XSqe9cdj60i1PByt2906T0u9P36xzvJy7n8EKfbEFHuHMm06+uOL0R9fRLs/LrhnSp4timewZK0iWdMFirVvQ++OAAAAAHyI3GyI3gyN4KyR4EyW4Oya4oyfTKPOz0I66yge/fFl6I8vpNwfV3wjofiWRGfxBvPjmv1x6zCdyfy4dZzGflLWCb4JDBTfTrb1gdwbUwAAAAAAAFkPnMBBuFM9QlgAAAAASUVORK5CYII="
         ></img>
         <a href="/">
-        <img
-          className="h-12 mx-2 cursor-pointer"
-          alt="youtube-logo"
-          src="https://cdn.mos.cms.futurecdn.net/8gzcr6RpGStvZFA2qRt4v6.jpg"
-        ></img>
+          <img
+            className="h-12 mx-2 cursor-pointer"
+            alt="youtube-logo"
+            src="https://cdn.mos.cms.futurecdn.net/8gzcr6RpGStvZFA2qRt4v6.jpg"
+          ></img>
         </a>
       </div>
-      <div className="col-span-10 px-20">
-        <input
-          type="text"
-          placeholder="   Search"
-          className="w-1/2 border border-gray-400 py-3 rounded-l-full"
-        />
-        <button className="border border-gray-400 py-3 px-3 rounded-r-full bg-gray-100">
-          Search
-        </button>
+      <div className="col-span-10 px-20 py-2">
+        <div>
+          <input
+            type="text"
+            placeholder="Search"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchQuery}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur= {()=> setShowSuggestions(false)}
+            className="w-1/2 border border-gray-400 py-3 rounded-l-full px-4"
+          />
+          <button className="border border-gray-400 py-3 px-3 rounded-r-full bg-gray-100">
+            Search
+          </button>
+          {showSuggestions && (
+            <div className="fixed bg-white py-2 px-5 w-[29rem] shadow-lg rounded-lg border-gray-100">
+              <ul>
+                {suggestions.map((suggestion) => (
+                  <li
+                    key={suggestion}
+                    className=" py-2 shadow-sm hover:bg-gray-100"
+                  >
+                    {suggestion}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
+
       <div className="col-span-1">
         <img
           className="h-10"
